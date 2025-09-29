@@ -1,0 +1,66 @@
+/* Simple Clean Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    margin-bottom: 20px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.btn-sm {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.loading {
+    color: #666;
+    font-style: italic;
+    padding: 10px;
+    text-align: center;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* Status colors */
+.status-pending { color: #856404; background-color: #fff3cd; }
+.status-approved { color: #155724; background-color: #d4edda; }
+.status-rejected { color: #721c24; background-color: #f8d7da; }
+
+/* Responsive tables */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Hover effects */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
