@@ -1,0 +1,111 @@
+/* Menu Page Styles */
+
+.menu-hero {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.1;
+}
+
+.category-title {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.category-description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.menu-item-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.menu-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.menu-item-content {
+    padding: 1.5rem;
+}
+
+.menu-item-name {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.menu-item-description {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.menu-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #27ae60;
+}
+
+.prep-time {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.menu-item-actions {
+    margin-top: 1rem;
+}
+
+.btn-group .btn {
+    border-radius: 8px;
+    margin-right: 0.5rem;
+}
+
+.menu-category {
+    margin-bottom: 4rem;
+}
+
+.menu-category[data-category] {
+    display: none;
+}
+
+.menu-category.active {
+    display: block;
+}
+
+.btn-group .btn.active {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    color: white;
+}

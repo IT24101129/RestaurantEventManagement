@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Restaurant Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/reservations.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-utensils me-2"></i>Restaurant Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reservations">Reservations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu">Menu</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold">Secure Payment</h1>
+                    <p class="lead text-muted">Complete your reservation with a secure payment</p>
+                </div>
+
+                <!-- Payment Form -->
+                <div class="card border-0 shadow">
+                    <div class="card-body p-5">
+                        <form th:action="@{/reservations/payment/{id}(id=${reservation.id})}" method="post" id="paymentForm">
+                            <!-- Reservation Summary -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="border-bottom pb-2 mb-3">
+                                        <i class="fas fa-calendar me-2"></i>Reservation Summary
+                                    </h5>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="detail-item mb-2">
+                                        <label class="fw-bold text-muted">Reservation ID:</label>
+                                        <p class="mb-0" th:text="#${reservation.id}">#12345</p>
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <label class="fw-bold text-muted">Date & Time:</label>
+                                        <p class="mb-0" th:text="${#temporals.format(reservation.reservationDateTime, 'EEEE, MMMM dd, yyyy \'at\' h:mm a')}">Friday, January 15, 2024 at 7:00 PM</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item mb-2">
+                                        <label class="fw-bold text-muted">Table:</label>
+                                        <p class="mb-0" th:text="'Table ' + ${reservation.table.name}">Table 5</p>
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <label class="fw-bold text-muted">Party Size:</label>
+                                        <p class="mb-0" th:text="${reservation.numberOfGuests} + ' guest' + (${reservation.numberOfGuests} > 1 ? 's' : '')">4 guests</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Details -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="border-bottom pb-2 mb-3">
+                                        <i class="fas fa-credit-card me-2"></i>Payment Details
+                                    </h5>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="paymentMethod" class="form-label">Payment Method *</label>
+                                    <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                                        <option value="">Select payment method</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Debit Card">Debit Card</option>
+                                        <option value="PayPal">PayPal</option>
+                                        <option value="Apple Pay">Apple Pay</option>
+                                        <option value="Google Pay">Google Pay</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" id="amount" value="25.00" readonly>
+                                    </div>
+                                    <small class="text-muted">Deposit amount (applied to final bill)</small>
+                                </div>
+                            </div>
+
+                            <!-- Credit Card Details (shown when Credit Card is selected) -->
+                            <div id="creditCardDetails" style="display: none;">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="cardNumber" class="form-label">Card Number *</label>
+                                        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="expiryDate" class="form-label">Expiry Date *</label>
+                                        <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="cvv" class="form-label">CVV *</label>
+                                        <input type="text" class="form-control" id="cvv" placeholder="123" maxlength="4">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label for="cardholderName" class="form-label">Cardholder Name *</label>
+                                        <input type="text" class="form-control" id="cardholderName" placeholder="John Doe">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PayPal Details (shown when PayPal is selected) -->
+                            <div id="paypalDetails" style="display: none;">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    You will be redirected to PayPal to complete your payment securely.
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="paymentTerms" required>
+                                    <label class="form-check-label" for="paymentTerms">
+                                        I agree to the <a href="#" class="text-decoration-none">Payment Terms</a> 
+                                        and <a href="#" class="text-decoration-none">Refund Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div class="alert alert-success">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                <strong>Secure Payment:</strong> Your payment information is encrypted and secure. 
+                                We use industry-standard SSL encryption to protect your data.
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a th:href="@{/reservations/confirmation/{id}(id=${reservation.id})}" class="btn btn-outline-secondary me-md-2">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Confirmation
+                                </a>
+                                <button type="submit" class="btn btn-success" id="payButton">
+                                    <i class="fas fa-credit-card me-1"></i>Pay $25.00
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Payment Security Info -->
+                <div class="card border-0 bg-light mt-4">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-lock me-2"></i>Payment Security
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                                    <p class="mb-0">SSL Encrypted</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                                    <p class="mb-0">PCI Compliant</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-user-shield fa-2x text-info mb-2"></i>
+                                    <p class="mb-0">Fraud Protected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/payment.js}"></script>
+</body>
+</html>

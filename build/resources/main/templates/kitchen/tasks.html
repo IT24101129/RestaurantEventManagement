@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Tasks - Restaurant Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/kitchen/dashboard">
+        <i class="fas fa-utensils me-2"></i>Kitchen Dashboard
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/kitchen/dashboard">
+              <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/kitchen/orders">
+              <i class="fas fa-clipboard-list me-1"></i>Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/kitchen/tasks">
+              <i class="fas fa-tasks me-1"></i>Tasks
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/kitchen/inventory">
+              <i class="fas fa-boxes me-1"></i>Inventory
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user me-1"></i><span th:text="${user != null ? user.name : 'Chef'}">Chef</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/profile">Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="position-sticky pt-3">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="/kitchen/dashboard">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/kitchen/orders">
+                <i class="fas fa-clipboard-list me-2"></i>Active Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/kitchen/tasks">
+                <i class="fas fa-tasks me-2"></i>Kitchen Tasks
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/kitchen/inventory">
+                <i class="fas fa-boxes me-2"></i>Inventory
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Kitchen Tasks</h1>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="taskTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+              Pending <span class="badge bg-warning ms-1" th:text="${pendingTasks != null ? pendingTasks.size() : 0}">0</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="inprogress-tab" data-bs-toggle="tab" data-bs-target="#inprogress" type="button" role="tab">
+              In Progress <span class="badge bg-info ms-1" th:text="${inProgressTasks != null ? inProgressTasks.size() : 0}">0</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+              Completed <span class="badge bg-success ms-1" th:text="${completedTasks != null ? completedTasks.size() : 0}">0</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="taskTabsContent">
+          <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            <div class="card mt-3">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Task #</th>
+                        <th>Order #</th>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Created</th>
+                        <th>Staff</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:if="${pendingTasks == null or pendingTasks.isEmpty()}">
+                        <td colspan="9" class="text-center text-muted py-4">
+                          <i class="fas fa-list-ul fa-3x mb-3"></i>
+                          <br>No pending tasks
+                        </td>
+                      </tr>
+                      <tr th:each="task : ${pendingTasks}">
+                        <td th:text="'#' + ${task.id}">#1</td>
+                        <td th:text="${task.order != null ? task.order.id : ''}">1001</td>
+                        <td th:text="${task.itemName}">Grilled Salmon</td>
+                        <td th:text="${task.quantity}">2</td>
+                        <td th:text="${task.taskType != null ? task.taskType.displayName : task.taskType}">COOK</td>
+                        <td><span class="badge bg-secondary" th:text="${task.priority}">MEDIUM</span></td>
+                        <td th:text="${#temporals.format(task.createdAt, 'HH:mm')}">12:30</td>
+                        <td th:text="${task.staff != null ? task.staff.name : ''}">John</td>
+                        <td>
+                          <button class="btn btn-sm btn-primary me-1" th:onclick="|assignTask(${task.id})|">
+                            <i class="fas fa-user-plus me-1"></i>Assign
+                          </button>
+                          <button class="btn btn-sm btn-success me-1" th:onclick="|startTask(${task.id})|">
+                            <i class="fas fa-play me-1"></i>Start
+                          </button>
+                          <button class="btn btn-sm btn-outline-warning" th:onclick="|delayTask(${task.id})|">
+                            <i class="fas fa-clock me-1"></i>Delay
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="inprogress" role="tabpanel">
+            <div class="card mt-3">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Task #</th>
+                        <th>Order #</th>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Started</th>
+                        <th>Staff</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:if="${inProgressTasks == null or inProgressTasks.isEmpty()}">
+                        <td colspan="9" class="text-center text-muted py-4">
+                          <i class="fas fa-fire fa-3x mb-3"></i>
+                          <br>No tasks in progress
+                        </td>
+                      </tr>
+                      <tr th:each="task : ${inProgressTasks}">
+                        <td th:text="'#' + ${task.id}">#2</td>
+                        <td th:text="${task.order != null ? task.order.id : ''}">1002</td>
+                        <td th:text="${task.itemName}">Pasta</td>
+                        <td th:text="${task.quantity}">1</td>
+                        <td th:text="${task.taskType != null ? task.taskType.displayName : task.taskType}">COOK</td>
+                        <td><span class="badge bg-secondary" th:text="${task.priority}">MEDIUM</span></td>
+                        <td th:text="${#temporals.format(task.startedAt, 'HH:mm')}">12:45</td>
+                        <td th:text="${task.staff != null ? task.staff.name : ''}">Jane</td>
+                        <td>
+                          <button class="btn btn-sm btn-success me-1" th:onclick="|completeTask(${task.id})|">
+                            <i class="fas fa-check me-1"></i>Complete
+                          </button>
+                          <button class="btn btn-sm btn-primary me-1" th:onclick="|assignTask(${task.id})|">
+                            <i class="fas fa-user-plus me-1"></i>Reassign
+                          </button>
+                          <button class="btn btn-sm btn-outline-warning" th:onclick="|delayTask(${task.id})|">
+                            <i class="fas fa-clock me-1"></i>Delay
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="completed" role="tabpanel">
+            <div class="card mt-3">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Task #</th>
+                        <th>Order #</th>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Completed</th>
+                        <th>Staff</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:if="${completedTasks == null or completedTasks.isEmpty()}">
+                        <td colspan="8" class="text-center text-muted py-4">
+                          <i class="fas fa-check-circle fa-3x mb-3"></i>
+                          <br>No completed tasks
+                        </td>
+                      </tr>
+                      <tr th:each="task : ${completedTasks}">
+                        <td th:text="'#' + ${task.id}">#3</td>
+                        <td th:text="${task.order != null ? task.order.id : ''}">1003</td>
+                        <td th:text="${task.itemName}">Salad</td>
+                        <td th:text="${task.quantity}">1</td>
+                        <td th:text="${task.taskType != null ? task.taskType.displayName : task.taskType}">PREP</td>
+                        <td><span class="badge bg-secondary" th:text="${task.priority}">LOW</span></td>
+                        <td th:text="${#temporals.format(task.completedAt, 'HH:mm')}">12:55</td>
+                        <td th:text="${task.staff != null ? task.staff.name : ''}">Mike</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function startTask(taskId) {
+      if (!confirm('Start this task?')) return;
+      fetch(`/kitchen/tasks/${taskId}/start`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.success) location.reload(); else alert('Error: ' + (d.error||d.message)); })
+        .catch(err => { console.error(err); alert('Error starting task'); });
+    }
+    function completeTask(taskId) {
+      if (!confirm('Complete this task?')) return;
+      fetch(`/kitchen/tasks/${taskId}/complete`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.success) location.reload(); else alert('Error: ' + (d.error||d.message)); })
+        .catch(err => { console.error(err); alert('Error completing task'); });
+    }
+    function delayTask(taskId) {
+      if (!confirm('Mark this task as delayed?')) return;
+      fetch(`/kitchen/tasks/${taskId}/delay`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.success) location.reload(); else alert('Error: ' + (d.error||d.message)); })
+        .catch(err => { console.error(err); alert('Error delaying task'); });
+    }
+    async function assignTask(taskId) {
+      try {
+        const res = await fetch('/kitchen/api/staff/available');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to load staff');
+        const staff = Array.isArray(data.staff) ? data.staff : [];
+        const label = staff.length ? staff.map(s => `${s.id}:${s.name}`).join(', ') : 'No staff available';
+        const input = prompt(`Enter staff ID to assign to task ${taskId}. Available -> ${label}`);
+        if (!input) return;
+        const staffId = parseInt(input, 10);
+        if (!Number.isFinite(staffId)) { alert('Invalid staff ID'); return; }
+        const resp = await fetch(`/kitchen/tasks/${taskId}/assign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ staffId })
+        });
+        const out = await resp.json();
+        if (!out.success) throw new Error(out.error || 'Assign failed');
+        location.reload();
+      } catch (e) {
+        console.error(e);
+        alert('Error assigning task');
+      }
+    }
+  </script>
+</body>
+</html>

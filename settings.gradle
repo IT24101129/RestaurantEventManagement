@@ -1,0 +1,2 @@
+// Toolchain plugin removed to avoid auto-download on Windows; use local JDK
+rootProject.name = 'Restaurant_22'

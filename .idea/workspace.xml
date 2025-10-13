@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="97e9e15f-928d-42ba-851b-d8bd3dff26de" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Restaurant_22" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="JavaScript File" />
+        <option value="CSS File" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <excluded-from-favorite>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="master" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </excluded-from-favorite>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="e3a6c695-8c6c-447a-8857-70b125ac0318" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="339MBaOKu9ZTKeAOwQSiV7nwm80" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Database Script.database-schema.sql.executor": "Run",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Gradle.Build Restaurant_22.executor": "Run",
+    "Gradle.C:/Users/PC/OneDrive/Desktop/New folder (2)/Restaurant_22/build.gradle.executor": "Debug",
+    "JUnit.Restaurant22ApplicationTests.executor": "Run",
+    "JavaScript Debug.index.html.executor": "Run",
+    "JavaScript Debug.login.html.executor": "Run",
+    "JavaScript Debug.register.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.RestaurantApplication.executor": "Debug",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/PC/OneDrive/Desktop/project backup/Restaurant_22",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "sqlserver"
+    ],
+    "RunConfigurationTargetLRU": [
+      "6fa455c9-8cd6-4b6d-ba97-fdfb1df5aa9a"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.restaurant.service" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\PC\OneDrive\Desktop\New folder (2)\Restaurant_22\src\main\resources\templates" />
+      <recent name="C:\Users\PC\OneDrive\Desktop\New folder (2)\Restaurant_22\src\main\resources\static" />
+      <recent name="C:\Users\PC\OneDrive\Desktop\New folder (2)\Restaurant_22\src\main\java\com\Restaurant\model" />
+      <recent name="C:\Users\PC\OneDrive\Desktop\New folder (2)\Restaurant_22\src\main\java\com\Restaurant\repository" />
+      <recent name="C:\Users\PC\OneDrive\Desktop\New folder (2)\Restaurant_22\src\main\java\com\Restaurant\config" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.RestaurantApplication">
+    <configuration name="database-schema.sql" type="DatabaseScript" editBeforeRun="true" nameIsGenerated="true">
+      <script-file value="$PROJECT_DIR$/src/main/java/com/SQL/database-schema.sql" />
+      <script-mode>FILE</script-mode>
+      <data-source id="6fa455c9-8cd6-4b6d-ba97-fdfb1df5aa9a" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Restaurant22ApplicationTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="restaurant-management-system" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.example.restaurant_22.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.example.restaurant_22" />
+      <option name="MAIN_CLASS_NAME" value="com.example.restaurant_22.Restaurant22ApplicationTests" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/Restaurant_22/Restaurant_22.main/static/index.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="login.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/Restaurant_22/Restaurant_22.main/static/login.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="register.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/Restaurant_22/Restaurant_22.main/static/register.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="RestaurantApplication (1)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="Restaurant_22.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.restaurant.RestaurantApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RestaurantApplication (2)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="restaurant-management-system" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.restaurant.RestaurantApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RestaurantApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="Restaurant_22.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.restaurant.RestaurantApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.Restaurant22ApplicationTests" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="StructureViewState">
+    <option name="selectedTab" value="Logical" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="97e9e15f-928d-42ba-851b-d8bd3dff26de" name="Changes" comment="" />
+      <created>1758724707290</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758724707290</updated>
+      <workItem from="1758724712979" duration="2688000" />
+      <workItem from="1758728369028" duration="3445000" />
+      <workItem from="1758769870731" duration="17412000" />
+      <workItem from="1758944290870" duration="870000" />
+      <workItem from="1758945311433" duration="1088000" />
+      <workItem from="1758946419441" duration="27355000" />
+      <workItem from="1759568978662" duration="288000" />
+      <workItem from="1759569298623" duration="31000" />
+      <workItem from="1759598418666" duration="109000" />
+      <workItem from="1759598644009" duration="92000" />
+      <workItem from="1759598769892" duration="468000" />
+      <workItem from="1759599276828" duration="3897000" />
+      <workItem from="1759638157331" duration="3027000" />
+      <workItem from="1759680956095" duration="1463000" />
+      <workItem from="1759759641250" duration="197000" />
+      <workItem from="1759759871759" duration="705000" />
+      <workItem from="1759760618145" duration="41000" />
+      <workItem from="1759767687804" duration="14312000" />
+      <workItem from="1759929622334" duration="5448000" />
+      <workItem from="1759983859657" duration="1929000" />
+      <workItem from="1760251050450" duration="2592000" />
+      <workItem from="1760336384209" duration="440000" />
+      <workItem from="1760336885171" duration="649000" />
+      <workItem from="1760337584138" duration="581000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="b75b7bd7-0adc-4120-a57f-62a5e4a8dbae" value="TOOL_WINDOW" />
+        <entry key="abb2baa2-7faa-44b6-b08e-c18a9de84457" value="EDITOR" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="abb2baa2-7faa-44b6-b08e-c18a9de84457">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="b75b7bd7-0adc-4120-a57f-62a5e4a8dbae">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

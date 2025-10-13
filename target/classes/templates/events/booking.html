@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Booking Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .calendar-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .time-slot {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .time-slot:hover {
+            background: #2196f3;
+            color: white;
+        }
+        .time-slot.selected {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            border-color: #ddd;
+        }
+        .event-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .event-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .event-card.selected {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .booking-form {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-calendar-alt me-2"></i>Event Booking System
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="fas fa-home me-1"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="/logout">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mt-4">
+            <!-- Error/Success Messages -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1><i class="fas fa-calendar-check me-2"></i>Event Booking Dashboard</h1>
+                    <p class="text-muted">Welcome, <span th:text="${user?.name}">Event Coordinator</span>! Manage event bookings and check availability.</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Event Selection -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-list me-2"></i>Available Events</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Event Type Filter -->
+                            <div class="mb-3">
+                                <label for="eventTypeFilter" class="form-label">Event Type</label>
+                                <select id="eventTypeFilter" class="form-select">
+                                    <option value="">All Types</option>
+                                    <option th:each="type : ${eventTypes}" th:value="${type}" th:text="${type.displayName}"></option>
+                                </select>
+                            </div>
+
+                            <!-- Guest Count Filter -->
+                            <div class="mb-3">
+                                <label for="guestCountFilter" class="form-label">Guest Count</label>
+                                <input type="number" id="guestCountFilter" class="form-control" placeholder="Enter guest count" min="1">
+                            </div>
+
+                            <!-- Max Price Filter -->
+                            <div class="mb-3">
+                                <label for="maxPriceFilter" class="form-label">Max Price</label>
+                                <input type="number" id="maxPriceFilter" class="form-control" placeholder="Enter max price" min="0" step="0.01">
+                            </div>
+
+                            <button id="filterEvents" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-search me-1"></i>Filter Events
+                            </button>
+
+                            <!-- Events List -->
+                            <div id="eventsList">
+                                <div th:each="event : ${availableEvents}" class="event-card" th:data-event-id="${event.id}">
+                                    <h6 th:text="${event.eventName}">Event Name</h6>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-tag me-1"></i>
+                                        <span th:text="${event.eventType.displayName}">Event Type</span>
+                                    </p>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-users me-1"></i>
+                                        <span th:text="${event.capacity}">0</span> guests max
+                                    </p>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="${event.durationHours}">0</span> hours
+                                    </p>
+                                    <p class="text-success mb-0">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        $<span th:text="${#numbers.formatDecimal(event.basePrice, 1, 2)}">0.00</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar and Time Slots -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-calendar me-2"></i>Select Date & Time</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Date Selection -->
+                            <div class="mb-3">
+                                <label for="eventDate" class="form-label">Event Date</label>
+                                <input type="date" id="eventDate" class="form-control" th:value="${currentDate}">
+                            </div>
+
+                            <!-- Time Slots -->
+                            <div id="timeSlotsContainer">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Loading time slots...
+                                </div>
+                            </div>
+
+                            <!-- Alternative Dates -->
+                            <div id="alternativeDatesContainer" class="mt-3" style="display: none;">
+                                <h6>Alternative Available Dates:</h6>
+                                <div id="alternativeDatesList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="col-lg-4">
+                    <div class="booking-form">
+                        <h5><i class="fas fa-edit me-2"></i>Booking Details</h5>
+                        
+                        <form id="bookingForm">
+                            <!-- Client Information -->
+                            <div class="mb-3">
+                                <label for="clientName" class="form-label">Client Name *</label>
+                                <input type="text" id="clientName" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="clientEmail" class="form-label">Client Email *</label>
+                                <input type="email" id="clientEmail" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="clientPhone" class="form-label">Client Phone *</label>
+                                <input type="tel" id="clientPhone" class="form-control" required>
+                            </div>
+
+                            <!-- Event Details -->
+                            <div class="mb-3">
+                                <label for="guestCount" class="form-label">Guest Count *</label>
+                                <input type="number" id="guestCount" class="form-control" min="1" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="specialRequirements" class="form-label">Special Requirements</label>
+                                <textarea id="specialRequirements" class="form-control" rows="3" placeholder="Any special requirements or requests..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea id="notes" class="form-control" rows="2" placeholder="Additional notes..."></textarea>
+                            </div>
+
+                            <!-- Selected Event Info -->
+                            <div id="selectedEventInfo" class="alert alert-info" style="display: none;">
+                                <h6>Selected Event:</h6>
+                                <p id="selectedEventName" class="mb-1"></p>
+                                <p id="selectedEventPrice" class="mb-0"></p>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="submitBooking" class="btn btn-success w-100" disabled>
+                                <i class="fas fa-check me-1"></i>Create Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedEventId = null;
+        let selectedTimeSlot = null;
+        let availableTimeSlots = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTimeSlots();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Event selection
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    selectEvent(this);
+                });
+            });
+
+            // Date change
+            document.getElementById('eventDate').addEventListener('change', function() {
+                loadTimeSlots();
+            });
+
+            // Filter events
+            document.getElementById('filterEvents').addEventListener('click', function() {
+                filterEvents();
+            });
+
+            // Booking form submission
+            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createBooking();
+            });
+        }
+
+        function selectEvent(eventCard) {
+            // Remove previous selection
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select new event
+            eventCard.classList.add('selected');
+            selectedEventId = eventCard.dataset.eventId;
+
+            // Update selected event info
+            const eventName = eventCard.querySelector('h6').textContent;
+            const eventPrice = eventCard.querySelector('.text-success').textContent;
+            
+            document.getElementById('selectedEventName').textContent = eventName;
+            document.getElementById('selectedEventPrice').textContent = eventPrice;
+            document.getElementById('selectedEventInfo').style.display = 'block';
+
+            // Load time slots for selected event
+            loadTimeSlots();
+        }
+
+        function loadTimeSlots() {
+            if (!selectedEventId) {
+                showError('Please select an event first');
+                return;
+            }
+
+            const date = document.getElementById('eventDate').value;
+            if (!date) {
+                showError('Please select a date');
+                return;
+            }
+
+            const container = document.getElementById('timeSlotsContainer');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin me-2"></i>Loading time slots...</div>';
+
+            fetch(`/events/available-slots?date=${date}&eventId=${selectedEventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayTimeSlots(data.availableSlots);
+                    } else {
+                        showError(data.message);
+                        if (data.message.includes('no time slots')) {
+                            loadAlternativeDates();
+                        }
+                    }
+                })
+                .catch(error => {
+                    showError('Failed to load time slots. Please try again.');
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayTimeSlots(slots) {
+            const container = document.getElementById('timeSlotsContainer');
+            
+            if (slots.length === 0) {
+                container.innerHTML = '<div class="alert alert-warning">No available time slots for this date.</div>';
+                loadAlternativeDates();
+                return;
+            }
+
+            let html = '<h6>Available Time Slots:</h6><div class="d-flex flex-wrap">';
+            slots.forEach(slot => {
+                const timeStr = slot.substring(0, 5); // Format HH:MM
+                html += `<div class="time-slot" data-time="${slot}">${timeStr}</div>`;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            // Add click listeners to time slots
+            container.querySelectorAll('.time-slot').forEach(slot => {
+                slot.addEventListener('click', function() {
+                    selectTimeSlot(this);
+                });
+            });
+        }
+
+        function selectTimeSlot(timeSlotElement) {
+            // Remove previous selection
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+
+            // Select new time slot
+            timeSlotElement.classList.add('selected');
+            selectedTimeSlot = timeSlotElement.dataset.time;
+
+            // Enable submit button
+            document.getElementById('submitBooking').disabled = false;
+        }
+
+        function loadAlternativeDates() {
+            if (!selectedEventId) return;
+
+            const startDate = document.getElementById('eventDate').value;
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 30); // Next 30 days
+
+            fetch(`/events/alternative-dates?eventId=${selectedEventId}&startDate=${startDate}&endDate=${endDate.toISOString().split('T')[0]}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.alternativeDates.length > 0) {
+                        displayAlternativeDates(data.alternativeDates);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading alternative dates:', error);
+                });
+        }
+
+        function displayAlternativeDates(dates) {
+            const container = document.getElementById('alternativeDatesContainer');
+            const list = document.getElementById('alternativeDatesList');
+            
+            let html = '';
+            dates.slice(0, 5).forEach(date => {
+                const dateObj = new Date(date);
+                const dateStr = dateObj.toLocaleDateString();
+                html += `<button class="btn btn-outline-primary btn-sm me-2 mb-2" onclick="selectAlternativeDate('${date}')">${dateStr}</button>`;
+            });
+            
+            list.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        function selectAlternativeDate(date) {
+            document.getElementById('eventDate').value = date;
+            loadTimeSlots();
+        }
+
+        function filterEvents() {
+            const eventType = document.getElementById('eventTypeFilter').value;
+            const guestCount = document.getElementById('guestCountFilter').value;
+            const maxPrice = document.getElementById('maxPriceFilter').value;
+
+            const params = new URLSearchParams();
+            if (eventType) params.append('eventType', eventType);
+            if (guestCount) params.append('guestCount', guestCount);
+            if (maxPrice) params.append('maxPrice', maxPrice);
+
+            fetch(`/events/suggest-packages?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayFilteredEvents(data.suggestedEvents);
+                    } else {
+                        showError(data.message);
+                    }
+                })
+                .catch(error => {
+                    showError('Failed to filter events. Please try again.');
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayFilteredEvents(events) {
+            const container = document.getElementById('eventsList');
+            
+            if (events.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No events match your criteria.</div>';
+                return;
+            }
+
+            let html = '';
+            events.forEach(event => {
+                html += `
+                    <div class="event-card" data-event-id="${event.id}">
+                        <h6>${event.eventName}</h6>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-tag me-1"></i>${event.eventType.displayName}
+                        </p>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-users me-1"></i>${event.capacity} guests max
+                        </p>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-clock me-1"></i>${event.durationHours} hours
+                        </p>
+                        <p class="text-success mb-0">
+                            <i class="fas fa-dollar-sign me-1"></i>$${event.basePrice.toFixed(2)}
+                        </p>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Re-add event selection listeners
+            container.querySelectorAll('.event-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    selectEvent(this);
+                });
+            });
+        }
+
+        function createBooking() {
+            if (!selectedEventId || !selectedTimeSlot) {
+                showError('Please select an event and time slot');
+                return;
+            }
+
+            const formData = {
+                eventId: selectedEventId,
+                clientName: document.getElementById('clientName').value,
+                clientEmail: document.getElementById('clientEmail').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                date: document.getElementById('eventDate').value,
+                startTime: selectedTimeSlot,
+                endTime: calculateEndTime(selectedTimeSlot),
+                guestCount: parseInt(document.getElementById('guestCount').value),
+                specialRequirements: document.getElementById('specialRequirements').value,
+                notes: document.getElementById('notes').value
+            };
+
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBooking');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Creating Booking...';
+
+            fetch('/events/create-booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Event booking created successfully! A confirmation email has been sent to the client.');
+                    resetForm();
+                } else {
+                    showError(data.message);
+                }
+            })
+            .catch(error => {
+                showError('Failed to create booking. Please try again.');
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check me-1"></i>Create Booking';
+            });
+        }
+
+        function calculateEndTime(startTime) {
+            // Add 1 hour to start time (assuming 1-hour slots)
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const endHours = hours + 1;
+            return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function resetForm() {
+            document.getElementById('bookingForm').reset();
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            document.getElementById('selectedEventInfo').style.display = 'none';
+            document.getElementById('submitBooking').disabled = true;
+            selectedEventId = null;
+            selectedTimeSlot = null;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

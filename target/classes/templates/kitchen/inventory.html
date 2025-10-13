@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Inventory - Restaurant Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/kitchen/dashboard">
+                <i class="fas fa-utensils me-2"></i>Kitchen Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kitchen/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kitchen/orders">
+                            <i class="fas fa-clipboard-list me-1"></i>Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kitchen/tasks">
+                            <i class="fas fa-tasks me-1"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/kitchen/inventory">
+                            <i class="fas fa-boxes me-1"></i>Inventory
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span th:text="${user?.name}">Chef</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/kitchen/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/kitchen/orders">
+                                <i class="fas fa-clipboard-list me-2"></i>Active Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/kitchen/tasks">
+                                <i class="fas fa-tasks me-2"></i>Kitchen Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/kitchen/inventory">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Kitchen Inventory</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Refresh</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                            <i class="fas fa-plus me-1"></i>Add Item
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert -->
+                <div th:if="${!lowStockItems?.empty}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Low Stock Alert!</strong> You have <span th:text="${lowStockItems?.size()}">0</span> items running low on stock.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Inventory Stats -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Items</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${allInventoryItems?.size() ?: 0}">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Low Stock</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${lowStockItems?.size() ?: 0}">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Well Stocked</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${(allInventoryItems?.size() ?: 0) - (lowStockItems?.size() ?: 0)}">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Categories</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">5</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-tags fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Inventory Items</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="inventoryTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Minimum Stock</th>
+                                        <th>Unit</th>
+                                        <th>Supplier</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${allInventoryItems?.empty}">
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class="fas fa-boxes fa-3x mb-3"></i>
+                                            <br>No inventory items found
+                                        </td>
+                                    </tr>
+                                    <tr th:each="item : ${allInventoryItems}">
+                                        <td th:text="${item.itemName}">Fresh Salmon</td>
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${item.category}">PROTEIN</span>
+                                        </td>
+                                        <td th:text="${item.currentStock} + ' ' + ${item.unit}">50.0 kg</td>
+                                        <td th:text="${item.minimumStock} + ' ' + ${item.unit}">10.0 kg</td>
+                                        <td th:text="${item.unit}">kg</td>
+                                        <td th:text="${item.supplier}">Ocean Fresh</td>
+                                        <td>
+                                            <span th:if="${item.isLowStock}" class="badge bg-warning">Low Stock</span>
+                                            <span th:unless="${item.isLowStock}" class="badge bg-success">Good</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" onclick="updateStock(${item.id})">
+                                                <i class="fas fa-edit me-1"></i>Update
+                                            </button>
+                                            <button class="btn btn-sm btn-info" onclick="viewItem(${item.id})">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Stock Items -->
+                <div th:if="${!lowStockItems?.empty}" class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-warning">Low Stock Items</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-warning">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Current Stock</th>
+                                        <th>Minimum Required</th>
+                                        <th>Urgency</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${lowStockItems}">
+                                        <td th:text="${item.itemName}">Fresh Salmon</td>
+                                        <td th:text="${item.currentStock} + ' ' + ${item.unit}">5.0 kg</td>
+                                        <td th:text="${item.minimumStock} + ' ' + ${item.unit}">10.0 kg</td>
+                                        <td>
+                                            <span class="badge bg-danger">Critical</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="requestRestock(${item.id})">
+                                                <i class="fas fa-shopping-cart me-1"></i>Request Restock
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="modal fade" id="addItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Inventory Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addItemForm">
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="itemName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" required>
+                                <option value="PROTEIN">Protein</option>
+                                <option value="VEGETABLE">Vegetable</option>
+                                <option value="DESSERT">Dessert</option>
+                                <option value="BEVERAGE">Beverage</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="currentStock" class="form-label">Current Stock</label>
+                                    <input type="number" class="form-control" id="currentStock" step="0.1" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="minimumStock" class="form-label">Minimum Stock</label>
+                                    <input type="number" class="form-control" id="minimumStock" step="0.1" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label">Unit</label>
+                                    <input type="text" class="form-control" id="unit" placeholder="kg, pieces, etc." required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="supplier" class="form-label">Supplier</label>
+                                    <input type="text" class="form-control" id="supplier" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addItem()">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+    <script>
+        function updateStock(itemId) {
+            const newStock = prompt('Enter new stock amount:');
+            if (newStock !== null && !isNaN(newStock)) {
+                fetch(`/kitchen/api/inventory/${itemId}/update-stock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ stock: parseFloat(newStock) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating stock');
+                });
+            }
+        }
+
+        function requestRestock(itemId) {
+            if (confirm('Request restocking for this item?')) {
+                fetch(`/kitchen/api/inventory/${itemId}/request-restock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Restock request sent successfully!');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error sending restock request');
+                });
+            }
+        }
+
+        function addItem() {
+            const form = document.getElementById('addItemForm');
+            const formData = new FormData(form);
+            const data = {
+                itemName: document.getElementById('itemName').value,
+                category: document.getElementById('category').value,
+                currentStock: parseFloat(document.getElementById('currentStock').value),
+                minimumStock: parseFloat(document.getElementById('minimumStock').value),
+                unit: document.getElementById('unit').value,
+                supplier: document.getElementById('supplier').value
+            };
+
+            fetch('/kitchen/api/inventory/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding item');
+            });
+        }
+
+        function viewItem(itemId) {
+            window.open(`/kitchen/inventory/${itemId}`, '_blank');
+        }
+    </script>
+</body>
+</html>

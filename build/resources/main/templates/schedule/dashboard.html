@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Scheduling Dashboard - Restaurant Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 120px repeat(7, 1fr);
+            gap: 1px;
+            background-color: #dee2e6;
+            border: 1px solid #dee2e6;
+        }
+        .time-slot {
+            background-color: #f8f9fa;
+            padding: 8px;
+            font-size: 0.8rem;
+            border-right: 1px solid #dee2e6;
+        }
+        .day-header {
+            background-color: #343a40;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .schedule-cell {
+            background-color: white;
+            min-height: 40px;
+            padding: 4px;
+            border-right: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .schedule-item {
+            background-color: #007bff;
+            color: white;
+            padding: 2px 4px;
+            margin: 1px 0;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .schedule-item:hover {
+            background-color: #0056b3;
+        }
+        .staff-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        .staff-card.available {
+            border-left: 4px solid #28a745;
+        }
+        .staff-card.unavailable {
+            border-left: 4px solid #dc3545;
+            opacity: 0.6;
+        }
+        .conflict-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-utensils me-2"></i>Restaurant Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+                <a class="nav-link active" href="/schedule/dashboard">
+                    <i class="fas fa-calendar-alt me-1"></i>Schedule
+                </a>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calendar-alt me-2"></i>Staff Scheduling Dashboard</h2>
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
+                            <i class="fas fa-plus me-1"></i>Create Schedule
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="refreshData()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Date Range Selector -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label for="dateRange" class="form-label">Date Range:</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" id="startDate" th:value="${weekStart}">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" id="endDate" th:value="${weekEnd}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="positionFilter" class="form-label">Position Filter:</label>
+                                <select class="form-select" id="positionFilter">
+                                    <option value="">All Positions</option>
+                                    <option value="WAITER">Waiter</option>
+                                    <option value="CHEF">Chef</option>
+                                    <option value="BARTENDER">Bartender</option>
+                                    <option value="HOST">Host</option>
+                                    <option value="CLEANER">Cleaner</option>
+                                    <option value="CASHIER">Cashier</option>
+                                    <option value="KITCHEN_ASSISTANT">Kitchen Assistant</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary mt-4" onclick="loadSchedules()">
+                                    <i class="fas fa-search me-1"></i>Load Schedules
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Weekly Schedule View</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="scheduleGrid" class="schedule-grid">
+                            <!-- Schedule grid will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Staff Panel -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Available Staff</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="staffList" class="row">
+                            <!-- Staff cards will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Schedule Modal -->
+    <div class="modal fade" id="createScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createScheduleForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="staffSelect" class="form-label">Staff Member *</label>
+                                <select class="form-select" id="staffSelect" required>
+                                    <option value="">Select Staff Member</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="scheduleDate" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="scheduleDate" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="startTime" class="form-label">Start Time *</label>
+                                <input type="time" class="form-control" id="startTime" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="endTime" class="form-label">End Time *</label>
+                                <input type="time" class="form-control" id="endTime" required>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" rows="3" placeholder="Optional notes for this schedule"></textarea>
+                        </div>
+                        <div id="conflictWarning" class="conflict-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="conflictMessage"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createSchedule()">Create Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Schedule Modal -->
+    <div class="modal fade" id="editScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editScheduleForm">
+                        <input type="hidden" id="editScheduleId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="editStaffSelect" class="form-label">Staff Member *</label>
+                                <select class="form-select" id="editStaffSelect" required>
+                                    <option value="">Select Staff Member</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editScheduleDate" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="editScheduleDate" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="editStartTime" class="form-label">Start Time *</label>
+                                <input type="time" class="form-control" id="editStartTime" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editEndTime" class="form-label">End Time *</label>
+                                <input type="time" class="form-control" id="editEndTime" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-select" id="editStatus">
+                                    <option value="SCHEDULED">Scheduled</option>
+                                    <option value="CONFIRMED">Confirmed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="NO_SHOW">No Show</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="editNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="editNotes" rows="3" placeholder="Optional notes for this schedule"></textarea>
+                        </div>
+                        <div id="editConflictWarning" class="conflict-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="editConflictMessage"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger me-2" onclick="deleteSchedule()">Delete</button>
+                    <button type="button" class="btn btn-primary" onclick="updateSchedule()">Update Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let schedules = [];
+        let staff = [];
+        let currentScheduleId = null;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStaff();
+            loadSchedules();
+        });
+
+        // Load staff data
+        async function loadStaff() {
+            try {
+                const response = await fetch('/schedule/staff/available');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                staff = await response.json();
+                
+                if (staff.length === 0) {
+                    showAlert('No staff members are available. Please add staff members to the system.', 'warning');
+                }
+                
+                populateStaffSelects();
+                displayStaffCards();
+            } catch (error) {
+                console.error('Error loading staff:', error);
+                showAlert('Failed to load staff data. The system will automatically refresh in 5 seconds.', 'danger');
+                // Auto-refresh after 5 seconds
+                setTimeout(() => {
+                    loadStaff();
+                }, 5000);
+            }
+        }
+
+        // Load schedules for the selected date range
+        async function loadSchedules() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showAlert('Please select both start and end dates', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/schedule/dashboard/${startDate}/${endDate}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const html = await response.text();
+                
+                // Extract schedules from the response (this would need to be implemented as an API endpoint)
+                // For now, we'll use a mock approach
+                schedules = await loadSchedulesData(startDate, endDate);
+                displayScheduleGrid();
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                showAlert('Failed to load schedules. The system will automatically refresh in 5 seconds.', 'danger');
+                // Auto-refresh after 5 seconds
+                setTimeout(() => {
+                    loadSchedules();
+                }, 5000);
+            }
+        }
+
+        // Load schedules data (mock implementation)
+        async function loadSchedulesData(startDate, endDate) {
+            // This would typically call an API endpoint
+            // For now, return empty array
+            return [];
+        }
+
+        // Populate staff select dropdowns
+        function populateStaffSelects() {
+            const staffSelect = document.getElementById('staffSelect');
+            const editStaffSelect = document.getElementById('editStaffSelect');
+            
+            staffSelect.innerHTML = '<option value="">Select Staff Member</option>';
+            editStaffSelect.innerHTML = '<option value="">Select Staff Member</option>';
+            
+            staff.forEach(member => {
+                const option = `<option value="${member.id}">${member.name} (${member.position})</option>`;
+                staffSelect.innerHTML += option;
+                editStaffSelect.innerHTML += option;
+            });
+        }
+
+        // Display staff cards
+        function displayStaffCards() {
+            const staffList = document.getElementById('staffList');
+            staffList.innerHTML = '';
+            
+            staff.forEach(member => {
+                const cardClass = member.isAvailable ? 'available' : 'unavailable';
+                const card = `
+                    <div class="col-md-3">
+                        <div class="staff-card ${cardClass}">
+                            <h6 class="mb-1">${member.name}</h6>
+                            <small class="text-muted">${member.position}</small>
+                            <br>
+                            <small class="text-muted">${member.email}</small>
+                            <br>
+                            <small class="text-muted">Max: ${member.maxHoursPerWeek}h/week</small>
+                        </div>
+                    </div>
+                `;
+                staffList.innerHTML += card;
+            });
+        }
+
+        // Display schedule grid
+        function displayScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            grid.innerHTML = '';
+            
+            // Create time slots (6 AM to 11 PM)
+            const timeSlots = [];
+            for (let hour = 6; hour <= 23; hour++) {
+                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+            }
+            
+            // Create grid header
+            grid.innerHTML += '<div class="time-slot"></div>'; // Empty corner
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(document.getElementById('startDate').value);
+                date.setDate(date.getDate() + i);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                grid.innerHTML += `<div class="day-header">${dayName}<br>${dayDate}</div>`;
+            }
+            
+            // Create time rows
+            timeSlots.forEach(time => {
+                grid.innerHTML += `<div class="time-slot">${time}</div>`;
+                for (let i = 0; i < 7; i++) {
+                    grid.innerHTML += '<div class="schedule-cell" data-time="' + time + '" data-day="' + i + '"></div>';
+                }
+            });
+            
+            // Add schedule items
+            schedules.forEach(schedule => {
+                addScheduleToGrid(schedule);
+            });
+        }
+
+        // Add schedule to grid
+        function addScheduleToGrid(schedule) {
+            const startTime = schedule.startTime;
+            const endTime = schedule.endTime;
+            const date = new Date(schedule.scheduleDate);
+            const startDate = new Date(document.getElementById('startDate').value);
+            const dayIndex = Math.floor((date - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (dayIndex >= 0 && dayIndex < 7) {
+                const cell = document.querySelector(`[data-time="${startTime}"][data-day="${dayIndex}"]`);
+                if (cell) {
+                    const scheduleItem = document.createElement('div');
+                    scheduleItem.className = 'schedule-item';
+                    scheduleItem.innerHTML = `
+                        <strong>${schedule.staff.name}</strong><br>
+                        <small>${startTime} - ${endTime}</small>
+                    `;
+                    scheduleItem.onclick = () => editSchedule(schedule);
+                    cell.appendChild(scheduleItem);
+                }
+            }
+        }
+
+        // Create new schedule
+        async function createSchedule() {
+            const form = document.getElementById('createScheduleForm');
+            const formData = new FormData(form);
+            
+            const scheduleData = {
+                staffId: parseInt(document.getElementById('staffSelect').value),
+                scheduleDate: document.getElementById('scheduleDate').value,
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Validate required fields
+            if (!scheduleData.staffId || !scheduleData.scheduleDate || !scheduleData.startTime || !scheduleData.endTime) {
+                showAlert('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Check if staff is available
+            if (staff.length === 0) {
+                showAlert('No staff members are available. Please add staff members to the system before creating schedules.', 'warning');
+                return;
+            }
+            
+            try {
+                // Check for conflicts first
+                const conflictResponse = await fetch('/schedule/check-conflicts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(scheduleData)
+                });
+                
+                if (!conflictResponse.ok) {
+                    throw new Error(`HTTP error! status: ${conflictResponse.status}`);
+                }
+                
+                const conflictResult = await conflictResponse.json();
+                if (conflictResult.hasConflict) {
+                    document.getElementById('conflictMessage').textContent = conflictResult.message;
+                    document.getElementById('conflictWarning').style.display = 'block';
+                    return;
+                }
+                
+                // Create schedule
+                const response = await fetch('/schedule/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(scheduleData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Schedule created successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('createScheduleModal')).hide();
+                    form.reset();
+                    document.getElementById('conflictWarning').style.display = 'none';
+                    loadSchedules();
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error creating schedule:', error);
+                showAlert('Failed to create schedule. Please try again later.', 'danger');
+            }
+        }
+
+        // Edit schedule
+        function editSchedule(schedule) {
+            currentScheduleId = schedule.id;
+            document.getElementById('editScheduleId').value = schedule.id;
+            document.getElementById('editStaffSelect').value = schedule.staff.id;
+            document.getElementById('editScheduleDate').value = schedule.scheduleDate;
+            document.getElementById('editStartTime').value = schedule.startTime;
+            document.getElementById('editEndTime').value = schedule.endTime;
+            document.getElementById('editStatus').value = schedule.status;
+            document.getElementById('editNotes').value = schedule.notes || '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
+            modal.show();
+        }
+
+        // Update schedule
+        async function updateSchedule() {
+            const scheduleData = {
+                staffId: parseInt(document.getElementById('editStaffSelect').value),
+                scheduleDate: document.getElementById('editScheduleDate').value,
+                startTime: document.getElementById('editStartTime').value,
+                endTime: document.getElementById('editEndTime').value,
+                notes: document.getElementById('editNotes').value,
+                status: document.getElementById('editStatus').value
+            };
+            
+            try {
+                const response = await fetch(`/schedule/update/${currentScheduleId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(scheduleData)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Schedule updated successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editScheduleModal')).hide();
+                    loadSchedules();
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error updating schedule:', error);
+                showAlert('Error updating schedule', 'danger');
+            }
+        }
+
+        // Delete schedule
+        async function deleteSchedule() {
+            if (!confirm('Are you sure you want to delete this schedule?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/schedule/delete/${currentScheduleId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Schedule deleted successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editScheduleModal')).hide();
+                    loadSchedules();
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting schedule:', error);
+                showAlert('Error deleting schedule', 'danger');
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadStaff();
+            loadSchedules();
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container-fluid');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
