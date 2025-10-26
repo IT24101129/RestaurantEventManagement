@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Management - Restaurant System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background-color: #343a40;
+            color: white;
+            height: 100vh;
+            position: fixed;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .table-actions {
+            white-space: nowrap;
+        }
+        .shift-morning { background-color: #e3f2fd !important; }
+        .shift-afternoon { background-color: #fff3e0 !important; }
+        .shift-evening { background-color: #fce4ec !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <h4 class="text-center mb-4">Restaurant Manager</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manager/staff">
+                            <i class="fas fa-users me-2"></i>Manage Staff
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/manager/schedules">
+                            <i class="fas fa-calendar-alt me-2"></i>Staff Schedules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-chart-bar me-2"></i>Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Staff Schedule Management</h1>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show">
+                Operation completed successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Date Range Filter -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>View Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate"
+                                   th:value="${startDate}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate"
+                                   th:value="${endDate}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add Schedule Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        <span th:text="${scheduleDTO.id == null} ? 'Add New Schedule' : 'Edit Schedule'"></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:object="${scheduleDTO}" th:action="${scheduleDTO.id == null} ?
+                            @{/manager/schedules/add} : @{/manager/schedules/update/{id}(id=${scheduleDTO.id})}"
+                          method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="staffId" class="form-label">Staff Member *</label>
+                                    <select class="form-select" id="staffId" th:field="*{staffId}" required>
+                                        <option value="">Select Staff Member</option>
+                                        <option th:each="staff : ${staffList}"
+                                                th:value="${staff.id}"
+                                                th:text="${staff.fullName + ' (' + staff.role + ')'}"></option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('staffId')}"
+                                         th:errors="*{staffId}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="scheduleDate" class="form-label">Schedule Date *</label>
+                                    <input type="date" class="form-control" id="scheduleDate"
+                                           th:field="*{scheduleDate}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('scheduleDate')}"
+                                         th:errors="*{scheduleDate}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="startTime" class="form-label">Start Time *</label>
+                                    <input type="time" class="form-control" id="startTime"
+                                           th:field="*{startTime}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('startTime')}"
+                                         th:errors="*{startTime}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">End Time *</label>
+                                    <input type="time" class="form-control" id="endTime"
+                                           th:field="*{endTime}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('endTime')}"
+                                         th:errors="*{endTime}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="shiftType" class="form-label">Shift Type *</label>
+                                    <select class="form-select" id="shiftType" th:field="*{shiftType}" required>
+                                        <option value="">Select Shift</option>
+                                        <option value="MORNING">Morning Shift</option>
+                                        <option value="AFTERNOON">Afternoon Shift</option>
+                                        <option value="EVENING">Evening Shift</option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('shiftType')}"
+                                         th:errors="*{shiftType}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" th:field="*{notes}"
+                                      rows="3" placeholder="Any special instructions..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                <span th:text="${scheduleDTO.id == null} ? 'Add Schedule' : 'Update Schedule'"></span>
+                            </button>
+                            <a th:if="${scheduleDTO.id != null}" href="/manager/schedules"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Schedule List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Scheduled Shifts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Staff Member</th>
+                                <th>Shift</th>
+                                <th>Time</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="schedule : ${schedules}"
+                                th:classappend="'shift-' + ${schedule.shiftType?.toLowerCase()}">
+                                <td th:text="${#temporals.format(schedule.scheduleDate, 'MMM dd, yyyy')}"></td>
+                                <td th:text="${schedule.staffName}"></td>
+                                <td>
+                                            <span class="badge"
+                                                  th:class="${schedule.shiftType == 'MORNING'} ? 'bg-info' :
+                                                           ${schedule.shiftType == 'AFTERNOON'} ? 'bg-warning' : 'bg-danger'"
+                                                  th:text="${schedule.shiftType}"></span>
+                                </td>
+                                <td>
+                                            <span th:text="${#temporals.format(schedule.startTime, 'HH:mm') + ' - ' +
+                                                           #temporals.format(schedule.endTime, 'HH:mm')}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(schedule.startTime, 'HH:mm')}"></span>
+                                </td>
+                                <td>
+                                            <span class="badge"
+                                                  th:class="${schedule.status == 'CONFIRMED'} ? 'bg-success' :
+                                                           ${schedule.status == 'CANCELLED'} ? 'bg-danger' : 'bg-secondary'"
+                                                  th:text="${schedule.status}"></span>
+                                </td>
+                                <td class="table-actions">
+                                    <a th:href="@{/manager/schedules/edit/{id}(id=${schedule.id})}"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/manager/schedules/delete/{id}(id=${schedule.id})}"
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to delete this schedule?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(schedules)}">
+                                <td colspan="7" class="text-center text-muted">
+                                    No schedules found for the selected date range.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
