@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head Chef Dashboard - Banquet Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-light">
+<!-- Include Header Fragment -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Enhanced Sidebar -->
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <div class="text-center mb-4">
+                    <div class="sidebar-brand">
+                        <div class="brand-icon-wrapper">
+                            <i class="fas fa-utensils fa-2x text-white"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mt-3 mb-1">Chef Command</h5>
+                        <p class="text-white-50 small mb-0">Kitchen Control Center</p>
+                    </div>
+                </div>
+
+                <ul class="nav flex-column px-2">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-white d-flex align-items-center active-sidebar" th:href="@{/headchef/dashboard}">
+                            <div class="nav-icon-wrapper">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <span class="fw-medium">Orders Dashboard</span>
+                            <i class="fas fa-chevron-right ms-auto nav-arrow"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-white d-flex align-items-center" href="http://localhost:8080/headchef/menu">
+                            <div class="nav-icon-wrapper">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <span class="fw-medium">Menu Management</span>
+                            <i class="fas fa-chevron-right ms-auto nav-arrow"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-white d-flex align-items-center" href="http://localhost:8080/headchef/inventory">
+                            <div class="nav-icon-wrapper">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <span class="fw-medium">Inventory</span>
+                            <i class="fas fa-chevron-right ms-auto nav-arrow"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-white d-flex align-items-center" href="#">
+                            <div class="nav-icon-wrapper">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <span class="fw-medium">Reports</span>
+                            <i class="fas fa-chevron-right ms-auto nav-arrow"></i>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-divider my-4"></div>
+
+                <div class="px-3 mb-3">
+                    <h6 class="sidebar-heading text-white-50 fw-semibold small text-uppercase letter-spacing-1">
+                        Quick Actions
+                    </h6>
+                </div>
+                <ul class="nav flex-column px-2">
+                    <li class="nav-item mb-1">
+                        <a class="nav-link nav-link-secondary text-white-50 d-flex align-items-center" href="#">
+                            <i class="fas fa-calendar me-3"></i>
+                            <span>Current Month</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link nav-link-secondary text-white-50 d-flex align-items-center" href="#">
+                            <i class="fas fa-chart-pie me-3"></i>
+                            <span>Last Quarter</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Enhanced Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <!-- Enhanced Header Section -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-4 mb-4">
+                    <div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="page-icon-wrapper me-3">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div>
+                                <h1 class="h2 fw-bold text-dark mb-1">Orders Dashboard</h1>
+                                <p class="text-muted mb-0 fs-6">Manage and track all kitchen orders in real-time</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="me-2">
+                            <form th:action="@{/headchef/orders}" method="get" class="d-flex">
+                                <select name="status" class="form-select modern-select shadow-sm" onchange="this.form.submit()">
+                                    <option value="">All Orders</option>
+                                    <option th:each="status : ${statuses}"
+                                            th:value="${status}"
+                                            th:text="${status}"
+                                            th:selected="${selectedStatus == status}">
+                                    </option>
+                                </select>
+                            </form>
+                        </div>
+                        <button type="button" class="btn btn-primary shadow-sm d-flex align-items-center px-4" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Orders Summary Cards -->
+            <div class="row mb-4 g-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-card-red h-100">
+                        <div class="stat-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="stat-icon-wrapper stat-icon-red">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="pulse-indicator"></div>
+                            </div>
+                            <div class="stat-value mb-1">
+                                <span th:text="${#lists.size(orders.?[status == 'Pending'])}">0</span>
+                            </div>
+                            <div class="stat-label mb-2">Pending Orders</div>
+                            <div class="stat-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Requires attention
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-card-orange h-100">
+                        <div class="stat-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="stat-icon-wrapper stat-icon-orange">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="stat-trend text-warning">
+                                    <i class="fas fa-arrow-up me-1"></i>
+                                    <small>Active</small>
+                                </div>
+                            </div>
+                            <div class="stat-value mb-1">
+                                <span th:text="${#lists.size(orders.?[status == 'In Progress'])}">0</span>
+                            </div>
+                            <div class="stat-label mb-2">In Progress</div>
+                            <div class="stat-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-utensils me-1"></i>Currently cooking
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-card-green h-100">
+                        <div class="stat-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="stat-icon-wrapper stat-icon-green">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-trend text-success">
+                                    <i class="fas fa-check me-1"></i>
+                                    <small>Ready</small>
+                                </div>
+                            </div>
+                            <div class="stat-value mb-1">
+                                <span th:text="${#lists.size(orders.?[status == 'Ready'])}">0</span>
+                            </div>
+                            <div class="stat-label mb-2">Ready Orders</div>
+                            <div class="stat-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-bell me-1"></i>Ready for service
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card stat-card-blue h-100">
+                        <div class="stat-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="stat-icon-wrapper stat-icon-blue">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <div class="stat-trend text-info">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <small>Today</small>
+                                </div>
+                            </div>
+                            <div class="stat-value mb-1">
+                                <span th:text="${#lists.size(orders.?[status == 'Completed'])}">0</span>
+                            </div>
+                            <div class="stat-label mb-2">Completed Today</div>
+                            <div class="stat-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-check-double me-1"></i>Successfully served
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Orders Table -->
+            <div class="card modern-card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h5 class="mb-1 fw-bold">Order Management</h5>
+                            <small class="text-muted">Real-time kitchen order tracking</small>
+                        </div>
+                        <div class="d-flex gap-2 mt-2 mt-md-0 align-items-center">
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="fas fa-list me-1"></i>
+                                <span th:text="${#lists.size(orders)}">0</span> orders
+                            </span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover modern-table mb-0" id="ordersTable" width="100%" cellspacing="0">
+                            <thead>
+                            <tr>
+                                <th class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        Order ID
+                                        <i class="fas fa-sort ms-2 text-muted" style="font-size: 0.75rem;"></i>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        Date & Time
+                                        <i class="fas fa-sort ms-2 text-muted" style="font-size: 0.75rem;"></i>
+                                    </div>
+                                </th>
+                                <th>Type</th>
+                                <th>Items</th>
+                                <th>Dietary Notes</th>
+                                <th>Total Cost</th>
+                                <th>Status</th>
+                                <th class="pe-4 text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="order : ${orders}"
+                                th:class="${order.status == 'Urgent' ? 'row-urgent' : ''}">
+                                <td class="ps-4">
+                                    <div class="order-id">#<span th:text="${order.orderId}">1</span></div>
+                                </td>
+                                <td>
+                                    <div class="order-datetime">
+                                        <div class="fw-medium" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy')}">01/12/2024</div>
+                                        <small class="text-muted d-flex align-items-center">
+                                            <i class="fas fa-clock me-1" style="font-size: 0.7rem;"></i>
+                                            <span th:text="${#temporals.format(order.orderDate, 'HH:mm')}">14:30</span>
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:text="${order.type}"
+                                          th:class="${'order-type-badge ' + (order.type == 'Dine-in' ? 'type-dinein' : 'type-takeout')}">
+                                        Dine-in
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="order-items">
+                                        <div th:each="item : ${order.orderItems}" class="item-entry">
+                                            <span class="item-quantity" th:text="${item.quantity}">1</span>
+                                            <i class="fas fa-times mx-1 text-muted" style="font-size: 0.7rem;"></i>
+                                            <span class="item-name" th:text="${item.itemName}">Item</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div th:if="${order.dietaryNotes != null and order.dietaryNotes != ''}"
+                                         class="dietary-note">
+                                        <i class="fas fa-leaf me-1"></i>
+                                        <small th:text="${order.dietaryNotes}">Notes</small>
+                                    </div>
+                                    <span th:if="${order.dietaryNotes == null or order.dietaryNotes == ''}"
+                                          class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <div class="order-total">
+                                        <span th:text="'$' + ${#numbers.formatDecimal(order.totalCost != null ? order.totalCost : 0, 1, 2)}">
+                                            $50.00
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:class="${'status-badge ' +
+                                        (order.status == 'Pending' ? 'status-pending' :
+                                         order.status == 'Confirmed' ? 'status-confirmed' :
+                                         order.status == 'In Progress' ? 'status-progress' :
+                                         order.status == 'Ready' ? 'status-ready' :
+                                         order.status == 'Completed' ? 'status-completed' :
+                                         'status-cancelled')}">
+                                        <i th:class="${'fas me-1 ' +
+                                            (order.status == 'Pending' ? 'fa-clock' :
+                                             order.status == 'Confirmed' ? 'fa-check' :
+                                             order.status == 'In Progress' ? 'fa-fire' :
+                                             order.status == 'Ready' ? 'fa-check-circle' :
+                                             order.status == 'Completed' ? 'fa-check-double' :
+                                             'fa-times')}"></i>
+                                        <span th:text="${order.status != null ? order.status : 'Unknown'}">Pending</span>
+                                    </span>
+                                </td>
+                                <td class="pe-4">
+                                    <form th:action="@{/headchef/orders/{orderId}/status(orderId=${order.orderId})}"
+                                          method="post" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm status-dropdown"
+                                                onchange="this.form.submit()">
+                                            <option th:each="status : ${statuses}"
+                                                    th:value="${status}"
+                                                    th:text="${status}"
+                                                    th:selected="${order.status == status}">
+                                            </option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(orders)}">
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-clipboard-list"></i>
+                                        </div>
+                                        <h5 class="mt-3 mb-2">No Orders Found</h5>
+                                        <p class="text-muted mb-0">When new orders arrive, they will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Include Footer Fragment -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+
+<!-- Custom Scripts -->
+<script th:src="@{/js/app.js}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            window.location.reload();
+        }, 30000);
+
+        // Add hover effects to table rows
+        const tableRows = document.querySelectorAll('#ordersTable tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+                this.style.transform = 'translateY(-1px)';
+                this.style.transition = 'all 0.2s ease';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+                this.style.transform = '';
+            });
+        });
+
+        // Smooth scroll animations
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #3498db;
+        --light-color: #ecf0f1;
+        --dark-color: #2c3e50;
+        --border-radius: 12px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f7fa;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #1a252f 0%, #2c3e50 50%, #34495e 100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        background: radial-gradient(circle at top left, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
+    }
+
+    .sidebar-brand {
+        padding: 1.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        position: relative;
+    }
+
+    .brand-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(41, 128, 185, 0.3) 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .brand-icon-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.5;
+    }
+
+    .nav-link {
+        border-radius: 10px;
+        margin: 0 8px;
+        padding: 0.875rem 1rem !important;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: #fff;
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover {
+        background: rgba(255,255,255,0.12);
+        transform: translateX(4px);
+    }
+
+    .nav-link:hover::before {
+        transform: scaleY(1);
+    }
+
+    .active-sidebar {
+        background: linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%) !important;
+        border-left: 3px solid #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .nav-icon-wrapper {
+        width: 36px;
+        height: 36px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        transition: var(--transition);
+    }
+
+    .nav-link:hover .nav-icon-wrapper {
+        background: rgba(255,255,255,0.2);
+        transform: rotate(5deg) scale(1.05);
+    }
+
+    .nav-arrow {
+        font-size: 0.75rem;
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .nav-link:hover .nav-arrow {
+        opacity: 1;
+        transform: translateX(4px);
+    }
+
+    .nav-link-secondary {
+        padding: 0.625rem 1rem !important;
+        font-size: 0.9rem;
+    }
+
+    .sidebar-divider {
+        border-top: 1px solid rgba(255,255,255,0.08);
+        margin: 1.5rem 0.5rem !important;
+    }
+
+    .sidebar-heading {
+        letter-spacing: 0.05em;
+    }
+
+    .letter-spacing-1 {
+        letter-spacing: 0.05em;
+    }
+
+    /* Main Content */
+    .main-content {
+        background-color: #f5f7fa;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2980b9 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Modern Select */
+    .modern-select {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.625rem 2.5rem 0.625rem 1rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        min-width: 180px;
+        background-color: white;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .modern-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        border: none;
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        background: white;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-color) 0%, var(--accent-color-dark) 100%);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+    }
+
+    .stat-card-red::before {
+        --accent-color: #e74c3c;
+        --accent-color-dark: #c0392b;
+    }
+
+    .stat-card-orange::before {
+        --accent-color: #f39c12;
+        --accent-color-dark: #d68910;
+    }
+
+    .stat-card-green::before {
+        --accent-color: #27ae60;
+        --accent-color-dark: #229954;
+    }
+
+    .stat-card-blue::before {
+        --accent-color: #3498db;
+        --accent-color-dark: #2980b9;
+    }
+
+    .stat-card-body {
+        padding: 1.75rem;
+    }
+
+    .stat-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-icon-red {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        box-shadow: 0 8px 16px rgba(231, 76, 60, 0.3);
+    }
+
+    .stat-icon-orange {
+        background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+        box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3);
+    }
+
+    .stat-icon-green {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        box-shadow: 0 8px 16px rgba(39, 174, 96, 0.3);
+    }
+
+    .stat-icon-blue {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+    }
+
+    .stat-value {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--dark-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-footer {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .stat-trend {
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .pulse-indicator {
+        width: 12px;
+        height: 12px;
+        background: #e74c3c;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 0 rgba(231, 76, 60, 0.7);
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(231, 76, 60, 0);
+        }
+    }
+
+    /* Modern Card */
+    .modern-card {
+        border: none;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: white;
+    }
+
+    .modern-card .card-header {
+        background: white;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 1.5rem;
+    }
+
+    /* Modern Table */
+    .modern-table {
+        font-size: 0.9rem;
+    }
+
+    .modern-table thead {
+        background: linear-gradient(180deg, #f8f9fa 0%, #f0f2f5 100%);
+    }
+
+    .modern-table thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #495057;
+    }
+
+    .modern-table tbody td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .modern-table tbody tr {
+        transition: var(--transition);
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateX(2px);
+    }
+
+    .row-urgent {
+        background-color: #fff8e1 !important;
+        border-left: 4px solid #f39c12 !important;
+    }
+
+    /* Order Specific Styles */
+    .order-id {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .order-datetime {
+        line-height: 1.4;
+    }
+
+    .order-type-badge {
+        display: inline-block;
+        padding: 0.4rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .type-dinein {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #1976d2;
+    }
+
+    .type-takeout {
+        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        color: #7b1fa2;
+    }
+
+    .order-items {
+        max-height: 100px;
+        overflow-y: auto;
+    }
+
+    .item-entry {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        font-size: 0.875rem;
+    }
+
+    .item-quantity {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: #e9ecef;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #495057;
+    }
+
+    .item-name {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .dietary-note {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: #2e7d32;
+        font-weight: 500;
+    }
+
+    .order-total {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #27ae60;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+        color: #856404;
+        box-shadow: 0 2px 8px rgba(243, 156, 18, 0.2);
+    }
+
+    .status-confirmed {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+    }
+
+    .status-progress {
+        background: linear-gradient(135deg, #cfe2ff 0%, #9ec5fe 100%);
+        color: #084298;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
+    }
+
+    .status-ready {
+        background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);
+        color: #0f5132;
+        box-shadow: 0 2px 8px rgba(25, 135, 84, 0.2);
+    }
+
+    .status-completed {
+        background: linear-gradient(135deg, #e2e3e5 0%, #d3d4d5 100%);
+        color: #41464b;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #f8d7da 0%, #f1aeb5 100%);
+        color: #842029;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    }
+
+    /* Status Dropdown */
+    .status-dropdown {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 2rem 0.5rem 0.75rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        min-width: 150px;
+        background-color: white;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .status-dropdown:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+    }
+
+    .status-dropdown:hover {
+        border-color: var(--primary-color);
+        background-color: #f8f9fa;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #f0f2f5 0%, #e9ecef 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #adb5bd;
+    }
+
+    .empty-state h5 {
+        font-weight: 700;
+        color: #495057;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 0.625rem 1.25rem;
+        transition: var(--transition);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2980b9 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+        box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #e9ecef;
+        color: #495057;
+        background: white;
+    }
+
+    .btn-outline-secondary:hover {
+        border-color: #495057;
+        background: #495057;
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stat-value {
+            font-size: 1.75rem;
+        }
+
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+
+        .page-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+
+        .modern-table {
+            font-size: 0.85rem;
+        }
+
+        .modern-table tbody td {
+            padding: 1rem 0.75rem;
+        }
+
+        .order-items {
+            max-height: 60px;
+        }
+    }
+
+    /* Scrollbar Styling */
+    .order-items::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .order-items::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .order-items::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 10px;
+    }
+
+    .order-items::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+    }
+
+    /* Print Styles */
+    @media print {
+        .sidebar,
+        .btn-toolbar,
+        .btn,
+        .page-header,
+        .stat-card {
+            display: none !important;
+        }
+
+        .main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .modern-table {
+            font-size: 10pt;
+        }
+
+        .status-badge {
+            border: 1px solid #000;
+        }
+    }
+
+    /* Animation Classes */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+</body>
+</html>
